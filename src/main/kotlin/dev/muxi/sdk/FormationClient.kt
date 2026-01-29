@@ -47,6 +47,7 @@ class FormationClient(config: FormationConfig) {
     suspend fun chat(payload: Map<String, Any>, userId: String = ""): JsonElement? = transport.request("POST", "/chat", body = payload, useAdmin = false, userId = userId)
     fun chatStream(payload: Map<String, Any>, userId: String = ""): Flow<SseEvent> = transport.streamSse("POST", "/chat", body = payload + ("stream" to true), useAdmin = false, userId = userId)
     suspend fun audioChat(payload: Map<String, Any>, userId: String = ""): JsonElement? = transport.request("POST", "/audiochat", body = payload, useAdmin = false, userId = userId)
+    fun audioChatStream(payload: Map<String, Any>, userId: String = ""): Flow<SseEvent> = transport.streamSse("POST", "/audiochat", body = payload + ("stream" to true), useAdmin = false, userId = userId)
     
     // Sessions
     suspend fun getSessions(userId: String, limit: Int? = null): JsonElement? = transport.request("GET", "/sessions", mapOf("user_id" to userId, "limit" to limit), useAdmin = false, userId = userId)
