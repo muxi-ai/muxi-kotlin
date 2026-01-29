@@ -45,9 +45,9 @@ class ServerClient(config: ServerConfig) {
     // Streaming
     fun deployFormationStream(formationId: String, payload: Map<String, Any>): Flow<SseEvent> = streamSse("/rpc/formations/$formationId/deploy/stream", payload)
     fun updateFormationStream(formationId: String, payload: Map<String, Any>): Flow<SseEvent> = streamSse("/rpc/formations/$formationId/update/stream", payload)
-    fun startFormationStream(formationId: String): Flow<SseEvent> = streamSse("/rpc/formations/$formationId/start/stream", emptyMap())
-    fun restartFormationStream(formationId: String): Flow<SseEvent> = streamSse("/rpc/formations/$formationId/restart/stream", emptyMap())
-    fun rollbackFormationStream(formationId: String): Flow<SseEvent> = streamSse("/rpc/formations/$formationId/rollback/stream", emptyMap())
+    fun startFormationStream(formationId: String): Flow<SseEvent> = streamSse("/rpc/formations/$formationId/start/stream", emptyMap<String, Any>())
+    fun restartFormationStream(formationId: String): Flow<SseEvent> = streamSse("/rpc/formations/$formationId/restart/stream", emptyMap<String, Any>())
+    fun rollbackFormationStream(formationId: String): Flow<SseEvent> = streamSse("/rpc/formations/$formationId/rollback/stream", emptyMap<String, Any>())
     fun streamFormationLogs(formationId: String): Flow<SseEvent> = streamSseGet("/rpc/formations/$formationId/logs/stream")
     
     private suspend fun rpcGet(path: String, params: Map<String, Any?>? = null): JsonElement? = transport.requestJson("GET", path, params)

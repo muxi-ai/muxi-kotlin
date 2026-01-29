@@ -3,6 +3,11 @@ package dev.muxi.sdk
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.contentOrNull
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 
 data class FormationConfig(
     val formationId: String? = null,
@@ -235,7 +240,4 @@ internal class FormationTransport(
         is List<*> -> kotlinx.serialization.json.JsonArray(this.map { it?.toJsonElement() ?: kotlinx.serialization.json.JsonNull })
         else -> kotlinx.serialization.json.JsonPrimitive(this.toString())
     }
-    
-    private fun String.toRequestBody() = this.toByteArray().let { okhttp3.RequestBody.create("application/json".toMediaType(), it) }
-    private fun String.toMediaType() = okhttp3.MediaType.parse(this)!!
 }
