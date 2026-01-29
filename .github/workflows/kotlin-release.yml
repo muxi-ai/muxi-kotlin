@@ -1,0 +1,128 @@
+name: Kotlin SDK Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: kotlin-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    if: "!startsWith(github.event.head_commit.message, 'chore: release')"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build and Test
+        run: ./gradlew build test
+
+  release:
+    if: "!startsWith(github.event.head_commit.message, 'chore: release')"
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.MUXI_RELEASE_TOKEN }}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Compute next version
+        id: version
+        run: |
+          current=$(grep 'VERSION = ' src/main/kotlin/dev/muxi/sdk/Version.kt | sed 's/.*"\([^"]*\)".*/\1/')
+          major=$(echo "$current" | cut -d. -f1)
+          cdate=$(echo "$current" | cut -d. -f2)
+          cpatch=$(echo "$current" | cut -d. -f3)
+          today=$(date -u +%Y%m%d)
+          if [ "$cdate" = "$today" ]; then
+            nextpatch=$((cpatch + 1))
+          else
+            nextpatch=0
+          fi
+          next="${major}.${today}.${nextpatch}"
+          echo "version=$next" >> $GITHUB_OUTPUT
+
+      - name: Set version in source
+        run: |
+          sed -i 's/VERSION = ".*"/VERSION = "${{ steps.version.outputs.version }}"/' src/main/kotlin/dev/muxi/sdk/Version.kt
+          sed -i 's/version = ".*"/version = "${{ steps.version.outputs.version }}"/' build.gradle.kts
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/main/kotlin/dev/muxi/sdk/Version.kt build.gradle.kts
+          git commit -m "chore: release v${{ steps.version.outputs.version }}"
+          git push origin HEAD:main
+
+      - name: Create and push tag
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists"
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
+          body: |
+            Kotlin SDK v${{ steps.version.outputs.version }}
+            
+            Add to build.gradle.kts:
+            ```kotlin
+            implementation("dev.muxi:muxi-kotlin:${{ steps.version.outputs.version }}")
+            ```
+
+  sync_develop:
+    if: "!startsWith(github.event.head_commit.message, 'chore: release')"
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4
+        with:
+          ref: develop
+          fetch-depth: 0
+          token: ${{ secrets.MUXI_RELEASE_TOKEN }}
+
+      - name: Merge main into develop
+        run: |
+          git fetch origin main develop
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git merge origin/main --no-edit -m "chore: sync main to develop [skip ci]"
+          git push origin HEAD:develop
