@@ -17,7 +17,8 @@ class Transport(
     private val secretKey: String,
     private val timeout: Int = 30,
     private val maxRetries: Int = 0,
-    private val debug: Boolean = false
+    private val debug: Boolean = false,
+    private val app: String? = null
 ) {
     private val client = OkHttpClient.Builder()
         .connectTimeout(timeout.toLong(), TimeUnit.SECONDS)
@@ -58,6 +59,10 @@ class Transport(
                 client.newCall(requestBuilder.build()).execute().use { response ->
                     val elapsed = (System.currentTimeMillis() - startTime) / 1000.0
                     log("$method $fullPath -> ${response.code} (${String.format("%.3f", elapsed)}s)")
+                    
+                    // Check for SDK updates (non-blocking, once per process)
+                    val responseHeaders = response.headers.toMap()
+                    VersionCheck.checkForUpdates(responseHeaders)
                     
                     if (!response.isSuccessful) {
                         val retryAfter = response.header("Retry-After")?.toIntOrNull()
@@ -138,14 +143,18 @@ class Transport(
         return "${baseUrl.trimEnd('/')}$fullPath" to fullPath
     }
     
-    private fun buildHeaders(method: String, path: String, accept: String = "application/json"): Map<String, String> = mapOf(
-        "Authorization" to Auth.buildAuthHeader(keyId, secretKey, method, path),
-        "Content-Type" to "application/json",
-        "Accept" to accept,
-        "X-Muxi-SDK" to "kotlin/${MuxiVersion.VERSION}",
-        "X-Muxi-Client" to "kotlin/${System.getProperty("java.version")}",
-        "X-Muxi-Idempotency-Key" to UUID.randomUUID().toString()
-    )
+    private fun buildHeaders(method: String, path: String, accept: String = "application/json"): Map<String, String> {
+        val headers = mutableMapOf(
+            "Authorization" to Auth.buildAuthHeader(keyId, secretKey, method, path),
+            "Content-Type" to "application/json",
+            "Accept" to accept,
+            "X-Muxi-SDK" to "kotlin/${MuxiVersion.VERSION}",
+            "X-Muxi-Client" to "kotlin/${System.getProperty("java.version")}",
+            "X-Muxi-Idempotency-Key" to UUID.randomUUID().toString()
+        )
+        if (!app.isNullOrEmpty()) headers["X-Muxi-App"] = app
+        return headers
+    }
     
     private fun unwrapEnvelope(obj: JsonElement): JsonElement? {
         if (obj !is JsonObject || !obj.containsKey("data")) return obj

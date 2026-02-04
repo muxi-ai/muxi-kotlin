@@ -10,7 +10,8 @@ data class ServerConfig(
     val secretKey: String,
     val maxRetries: Int = 0,
     val timeout: Int = 30,
-    val debug: Boolean = false
+    val debug: Boolean = false,
+    internal val app: String? = null  // Internal: for Console telemetry
 )
 
 class ServerClient(config: ServerConfig) {
@@ -20,7 +21,8 @@ class ServerClient(config: ServerConfig) {
         secretKey = config.secretKey,
         timeout = config.timeout,
         maxRetries = config.maxRetries,
-        debug = config.debug
+        debug = config.debug,
+        app = config.app
     )
     
     // Unauthenticated

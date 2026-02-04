@@ -18,7 +18,8 @@ data class FormationConfig(
     val clientKey: String? = null,
     val maxRetries: Int = 0,
     val timeout: Int = 30,
-    val debug: Boolean = false
+    val debug: Boolean = false,
+    internal val app: String? = null  // Internal: for Console telemetry
 )
 
 class FormationClient(config: FormationConfig) {
@@ -26,7 +27,7 @@ class FormationClient(config: FormationConfig) {
     
     init {
         val baseUrl = buildBaseUrl(config)
-        transport = FormationTransport(baseUrl, config.adminKey, config.clientKey, config.timeout, config.maxRetries, config.debug)
+        transport = FormationTransport(baseUrl, config.adminKey, config.clientKey, config.timeout, config.maxRetries, config.debug, config.app)
     }
     
     // Health / status
@@ -139,7 +140,8 @@ internal class FormationTransport(
     private val clientKey: String?,
     private val timeout: Int,
     private val maxRetries: Int,
-    private val debug: Boolean
+    private val debug: Boolean,
+    private val app: String? = null
 ) {
     private val client = okhttp3.OkHttpClient.Builder()
         .connectTimeout(timeout.toLong(), java.util.concurrent.TimeUnit.SECONDS)
@@ -168,6 +170,10 @@ internal class FormationTransport(
         }
         
         client.newCall(requestBuilder.build()).execute().use { response ->
+            // Check for SDK updates (non-blocking, once per process)
+            val responseHeaders = response.headers.toMap()
+            VersionCheck.checkForUpdates(responseHeaders)
+            
             if (!response.isSuccessful) {
                 val responseBody = response.body?.string() ?: ""
                 var code: String? = null; var message = "Unknown error"
@@ -212,6 +218,7 @@ internal class FormationTransport(
     
     private fun buildHeaders(useAdmin: Boolean, userId: String, hasBody: Boolean, accept: String = "application/json"): Map<String, String> {
         val headers = mutableMapOf("X-Muxi-SDK" to "kotlin/${MuxiVersion.VERSION}", "X-Muxi-Client" to "kotlin/${MuxiVersion.VERSION}", "X-Muxi-Idempotency-Key" to java.util.UUID.randomUUID().toString(), "Accept" to accept)
+        if (!app.isNullOrEmpty()) headers["X-Muxi-App"] = app
         if (useAdmin) headers["X-MUXI-ADMIN-KEY"] = adminKey ?: throw IllegalArgumentException("admin key required")
         else headers["X-MUXI-CLIENT-KEY"] = clientKey ?: throw IllegalArgumentException("client key required")
         if (userId.isNotEmpty()) headers["X-Muxi-User-ID"] = userId
