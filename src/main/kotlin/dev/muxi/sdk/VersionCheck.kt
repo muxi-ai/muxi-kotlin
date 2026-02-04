@@ -20,7 +20,7 @@ object VersionCheck {
             checked = true
         }
         
-        if (!isDevMode()) return
+        if (notificationsDisabled()) return
         
         val latest = headers["X-Muxi-SDK-Latest"] ?: headers["x-muxi-sdk-latest"] ?: return
         if (!isNewerVersion(latest, Version.VERSION)) return
@@ -34,7 +34,7 @@ object VersionCheck {
         }
     }
     
-    private fun isDevMode(): Boolean = System.getenv("MUXI_DEBUG") == "1"
+    private fun notificationsDisabled(): Boolean = System.getenv("MUXI_SDK_VERSION_NOTIFICATION") == "0"
     
     private fun getCachePath(): File? {
         val home = System.getProperty("user.home") ?: return null
