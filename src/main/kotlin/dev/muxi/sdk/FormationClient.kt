@@ -19,6 +19,7 @@ data class FormationConfig(
     val maxRetries: Int = 0,
     val timeout: Int = 30,
     val debug: Boolean = false,
+    val mode: String = "live",  // "live" (default) or "draft" for local dev
     internal val app: String? = null  // Internal: for Console telemetry
 )
 
@@ -128,7 +129,8 @@ class FormationClient(config: FormationConfig) {
         config.baseUrl?.takeIf { it.isNotEmpty() }?.let { return it.trimEnd('/') }
         config.url?.takeIf { it.isNotEmpty() }?.let { return "${it.trimEnd('/')}/v1" }
         if (!config.serverUrl.isNullOrEmpty() && !config.formationId.isNullOrEmpty()) {
-            return "${config.serverUrl.trimEnd('/')}/api/${config.formationId}/v1"
+            val prefix = if (config.mode == "draft") "draft" else "api"
+            return "${config.serverUrl.trimEnd('/')}/$prefix/${config.formationId}/v1"
         }
         throw IllegalArgumentException("must set baseUrl, url, or serverUrl+formationId")
     }
