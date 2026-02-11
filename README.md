@@ -1,6 +1,6 @@
 # MUXI Kotlin SDK
 
-Official Kotlin/JVM SDK for [MUXI](https://muxi.ai) — infrastructure for AI agents.
+Official Kotlin/JVM SDK for [MUXI](https://muxi.org) — infrastructure for AI agents.
 
 **Highlights**
 - Coroutines with `OkHttp` transport
