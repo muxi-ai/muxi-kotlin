@@ -1,6 +1,13 @@
 # MUXI Kotlin SDK
 
-Official Kotlin/JVM SDK for the MUXI AI platform.
+Official Kotlin/JVM SDK for [MUXI](https://muxi.ai) — infrastructure for AI agents.
+
+**Highlights**
+- Coroutines with `OkHttp` transport
+- Built-in retries, idempotency, and typed errors
+- Streaming with Kotlin Flow for chat/audio and deploy/log tails
+
+> Need deeper usage notes? See the [User Guide](https://github.com/muxi-ai/muxi-kotlin/blob/main/USER_GUIDE.md) for streaming, retries, and auth details.
 
 ## Requirements
 
