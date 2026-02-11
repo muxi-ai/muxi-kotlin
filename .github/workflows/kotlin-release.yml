@@ -103,10 +103,10 @@ jobs:
 
       - name: Publish to Maven Central
         env:
-          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          MAVEN_USERNAME: ${{ secrets.MUXI_MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MUXI_MAVEN_PASSWORD }}
+          GPG_PRIVATE_KEY: ${{ secrets.MUXI_GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.MUXI_GPG_PASSPHRASE }}
         run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
 
       - name: Commit version bump
