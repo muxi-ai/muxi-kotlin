@@ -1,4 +1,4 @@
-package dev.muxi.sdk
+package org.muxi.sdk
 
 import kotlin.test.Test
 import kotlin.test.assertTrue

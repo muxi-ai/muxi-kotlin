@@ -1,4 +1,4 @@
-package dev.muxi.sdk
+package org.muxi.sdk
 
 open class MuxiException(
     val errorCode: String,

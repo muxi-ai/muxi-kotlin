@@ -5,7 +5,7 @@ plugins {
     id("signing")
 }
 
-group = "dev.muxi"
+group = "org.muxi"
 version = "0.20260129.0"
 
 repositories {

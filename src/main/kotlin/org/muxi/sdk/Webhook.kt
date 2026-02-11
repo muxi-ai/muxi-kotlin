@@ -1,4 +1,4 @@
-package dev.muxi.sdk
+package org.muxi.sdk
 
 import kotlinx.serialization.json.*
 import javax.crypto.Mac

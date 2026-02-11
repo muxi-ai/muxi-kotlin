@@ -1,4 +1,4 @@
-package dev.muxi.sdk
+package org.muxi.sdk
 
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assumptions.assumeTrue

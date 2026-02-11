@@ -137,7 +137,7 @@ jobs:
             
             Add to build.gradle.kts:
             ```kotlin
-            implementation("dev.muxi:muxi-kotlin:${{ steps.version.outputs.version }}")
+            implementation("org.muxi:muxi-kotlin:${{ steps.version.outputs.version }}")
             ```
 
   sync_develop:

@@ -1,4 +1,4 @@
-package dev.muxi.sdk
+package org.muxi.sdk
 
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec

@@ -5,13 +5,13 @@
 Add to your `build.gradle.kts`:
 
 ```kotlin
-implementation("dev.muxi:muxi-kotlin:0.20260129.0")
+implementation("org.muxi:muxi-kotlin:0.20260129.0")
 ```
 
 Or in Groovy `build.gradle`:
 
 ```groovy
-implementation 'dev.muxi:muxi-kotlin:0.20260129.0'
+implementation 'org.muxi:muxi-kotlin:0.20260129.0'
 ```
 
 ## Requirements

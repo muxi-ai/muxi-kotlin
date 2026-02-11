@@ -19,13 +19,13 @@ Official Kotlin/JVM SDK for [MUXI](https://muxi.org) — infrastructure for AI a
 Add to your `build.gradle.kts`:
 
 ```kotlin
-implementation("dev.muxi:muxi-kotlin:0.20260129.0")
+implementation("org.muxi:muxi-kotlin:0.20260129.0")
 ```
 
 Or in Groovy `build.gradle`:
 
 ```groovy
-implementation 'dev.muxi:muxi-kotlin:0.20260129.0'
+implementation 'org.muxi:muxi-kotlin:0.20260129.0'
 ```
 
 ## Quick Start

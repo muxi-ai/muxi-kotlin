@@ -1,4 +1,4 @@
-package dev.muxi.sdk
+package org.muxi.sdk
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -29,7 +29,7 @@ object VersionCheck {
         
         if (!notifiedRecently()) {
             System.err.println("[muxi] SDK update available: $latest (current: ${MuxiVersion.VERSION})")
-            System.err.println("[muxi] Update via Gradle: implementation(\"dev.muxi:muxi-kotlin:$latest\")")
+            System.err.println("[muxi] Update via Gradle: implementation(\"org.muxi:muxi-kotlin:$latest\")")
             markNotified()
         }
     }

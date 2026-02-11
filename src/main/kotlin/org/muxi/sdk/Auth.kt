@@ -1,4 +1,4 @@
-package dev.muxi.sdk
+package org.muxi.sdk
 
 import java.util.Base64
 import javax.crypto.Mac

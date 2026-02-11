@@ -1,4 +1,4 @@
-package dev.muxi.sdk
+package org.muxi.sdk
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
