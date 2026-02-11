@@ -23,12 +23,12 @@ object VersionCheck {
         if (notificationsDisabled()) return
         
         val latest = headers["X-Muxi-SDK-Latest"] ?: headers["x-muxi-sdk-latest"] ?: return
-        if (!isNewerVersion(latest, Version.VERSION)) return
+        if (!isNewerVersion(latest, MuxiVersion.VERSION)) return
         
         updateLatestVersion(latest)
         
         if (!notifiedRecently()) {
-            System.err.println("[muxi] SDK update available: $latest (current: ${Version.VERSION})")
+            System.err.println("[muxi] SDK update available: $latest (current: ${MuxiVersion.VERSION})")
             System.err.println("[muxi] Update via Gradle: implementation(\"dev.muxi:muxi-kotlin:$latest\")")
             markNotified()
         }
@@ -78,7 +78,7 @@ object VersionCheck {
     private fun updateLatestVersion(latest: String) {
         val cache = loadCache()
         val entry = cache[SDK_NAME] ?: VersionEntry()
-        cache[SDK_NAME] = entry.copy(current = Version.VERSION, latest = latest)
+        cache[SDK_NAME] = entry.copy(current = MuxiVersion.VERSION, latest = latest)
         saveCache(cache)
     }
     

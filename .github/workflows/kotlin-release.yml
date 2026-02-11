@@ -17,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      MUXI_SDK_E2E_SERVER_URL: ${{ secrets.MUXI_SDK_E2E_SERVER_URL }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4
         with:
@@ -32,8 +34,29 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build and Test
+      - name: Build and unit test
         run: ./gradlew build test
+
+      - name: Require test server
+        run: |
+          if [ -z "$MUXI_SDK_E2E_SERVER_URL" ]; then
+            echo "::error::MUXI_SDK_E2E_SERVER_URL secret is not set"
+            exit 1
+          fi
+          if ! curl -sf --max-time 10 "${MUXI_SDK_E2E_SERVER_URL}/ping" >/dev/null 2>&1 && \
+             ! curl -sf --max-time 10 "${MUXI_SDK_E2E_SERVER_URL}" >/dev/null 2>&1; then
+            echo "::error::Test server is not reachable at ${MUXI_SDK_E2E_SERVER_URL}"
+            exit 1
+          fi
+
+      - name: Integration tests
+        env:
+          MUXI_SDK_E2E_KEY_ID: ${{ secrets.MUXI_SDK_E2E_KEY_ID }}
+          MUXI_SDK_E2E_SECRET_KEY: ${{ secrets.MUXI_SDK_E2E_SECRET_KEY }}
+          MUXI_SDK_E2E_FORMATION_ID: ${{ secrets.MUXI_SDK_E2E_FORMATION_ID }}
+          MUXI_SDK_E2E_CLIENT_KEY: ${{ secrets.MUXI_SDK_E2E_CLIENT_KEY }}
+          MUXI_SDK_E2E_ADMIN_KEY: ${{ secrets.MUXI_SDK_E2E_ADMIN_KEY }}
+        run: ./gradlew test --tests "*IntegrationTest*"
 
   release:
     if: "!startsWith(github.event.head_commit.message, 'chore: release')"
@@ -74,6 +97,17 @@ jobs:
         run: |
           sed -i 's/VERSION = ".*"/VERSION = "${{ steps.version.outputs.version }}"/' src/main/kotlin/dev/muxi/sdk/Version.kt
           sed -i 's/version = ".*"/version = "${{ steps.version.outputs.version }}"/' build.gradle.kts
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Publish to Maven Central
+        env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
 
       - name: Commit version bump
         run: |
