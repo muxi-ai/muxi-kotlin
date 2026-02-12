@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "org.muxi"
-version = "0.1.0-preview"
+version = "0.20260212.0"
 
 repositories {
     mavenCentral()

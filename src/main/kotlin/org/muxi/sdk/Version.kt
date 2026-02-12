@@ -1,5 +1,5 @@
 package org.muxi.sdk
 
 object MuxiVersion {
-    const val VERSION = "0.20260129.0"
+    const val VERSION = "0.20260212.0"
 }
