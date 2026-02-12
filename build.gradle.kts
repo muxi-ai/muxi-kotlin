@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm") version "1.9.22"
-    kotlin("plugin.serialization") version "2.3.10"
+    kotlin("jvm") version "2.0.21"
+    kotlin("plugin.serialization") version "2.0.21"
     id("com.vanniktech.maven.publish") version "0.28.0"
 }
 
@@ -28,10 +28,8 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+kotlin {
+    jvmToolchain(17)
 }
 
 java {
