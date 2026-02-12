@@ -1,12 +1,11 @@
 plugins {
     kotlin("jvm") version "1.9.22"
     kotlin("plugin.serialization") version "1.9.22"
-    id("maven-publish")
-    id("signing")
+    id("com.vanniktech.maven.publish") version "0.28.0"
 }
 
 group = "org.muxi"
-version = "0.20260129.0"
+version = "0.1.0-preview"
 
 repositories {
     mavenCentral()
@@ -38,41 +37,38 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
-    withSourcesJar()
-    withJavadocJar()
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
-            
-            pom {
-                name.set("MUXI Kotlin SDK")
-                description.set("Kotlin SDK for MUXI AI platform")
-                url.set("https://github.com/muxi-ai/muxi-kotlin")
-                
-                licenses {
-                    license {
-                        name.set("MIT License")
-                        url.set("https://opensource.org/licenses/MIT")
-                    }
-                }
-                
-                developers {
-                    developer {
-                        id.set("muxi")
-                        name.set("MUXI AI")
-                        email.set("support@muxi.ai")
-                    }
-                }
-                
-                scm {
-                    connection.set("scm:git:git://github.com/muxi-ai/muxi-kotlin.git")
-                    developerConnection.set("scm:git:ssh://github.com/muxi-ai/muxi-kotlin.git")
-                    url.set("https://github.com/muxi-ai/muxi-kotlin")
-                }
+mavenPublishing {
+    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
+    
+    coordinates(group.toString(), "muxi-kotlin", version.toString())
+    
+    pom {
+        name.set("MUXI Kotlin SDK")
+        description.set("Kotlin SDK for MUXI AI platform")
+        url.set("https://github.com/muxi-ai/muxi-kotlin")
+        
+        licenses {
+            license {
+                name.set("MIT License")
+                url.set("https://opensource.org/licenses/MIT")
             }
+        }
+        
+        developers {
+            developer {
+                id.set("muxi")
+                name.set("MUXI AI")
+                email.set("support@muxi.ai")
+            }
+        }
+        
+        scm {
+            connection.set("scm:git:git://github.com/muxi-ai/muxi-kotlin.git")
+            developerConnection.set("scm:git:ssh://github.com/muxi-ai/muxi-kotlin.git")
+            url.set("https://github.com/muxi-ai/muxi-kotlin")
         }
     }
 }

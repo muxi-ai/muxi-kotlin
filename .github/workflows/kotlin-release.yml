@@ -80,7 +80,7 @@ jobs:
       - name: Compute next version
         id: version
         run: |
-          current=$(grep 'VERSION = ' src/main/kotlin/dev/muxi/sdk/Version.kt | sed 's/.*"\([^"]*\)".*/\1/')
+          current=$(grep 'const val VERSION' src/main/kotlin/org/muxi/sdk/Version.kt | sed 's/.*"\([^"]*\)".*/\1/')
           major=$(echo "$current" | cut -d. -f1)
           cdate=$(echo "$current" | cut -d. -f2)
           cpatch=$(echo "$current" | cut -d. -f3)
@@ -95,25 +95,40 @@ jobs:
 
       - name: Set version in source
         run: |
-          sed -i 's/VERSION = ".*"/VERSION = "${{ steps.version.outputs.version }}"/' src/main/kotlin/dev/muxi/sdk/Version.kt
+          sed -i 's/const val VERSION = ".*"/const val VERSION = "${{ steps.version.outputs.version }}"/' src/main/kotlin/org/muxi/sdk/Version.kt
           sed -i 's/version = ".*"/version = "${{ steps.version.outputs.version }}"/' build.gradle.kts
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Build
+        run: ./gradlew build -x test
+
+      - name: Decode GPG key
+        run: |
+          echo "${{ secrets.MUXI_SDK_GPG_PRIVATE_KEY }}" | base64 -d > /tmp/signing-key.asc
+          echo "=== Key file debug ==="
+          head -1 /tmp/signing-key.asc
+          tail -1 /tmp/signing-key.asc
+          wc -l /tmp/signing-key.asc
+          gpg --show-keys /tmp/signing-key.asc 2>&1 || true
+
       - name: Publish to Maven Central
         env:
-          MAVEN_USERNAME: ${{ secrets.MUXI_SDK_MAVEN_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.MUXI_SDK_MAVEN_PASSWORD }}
-          GPG_PRIVATE_KEY: ${{ secrets.MUXI_SDK_GPG_PRIVATE_KEY }}
-          GPG_PASSPHRASE: ${{ secrets.MUXI_SDK_GPG_PASSPHRASE }}
-        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MUXI_SDK_MAVEN_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MUXI_SDK_MAVEN_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.MUXI_SDK_GPG_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MUXI_SDK_GPG_PASSPHRASE }}
+        run: |
+          export ORG_GRADLE_PROJECT_signingInMemoryKey="$(cat /tmp/signing-key.asc)"
+          ./gradlew publishAndReleaseToMavenCentral --stacktrace
+          rm -f /tmp/signing-key.asc
 
       - name: Commit version bump
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add src/main/kotlin/dev/muxi/sdk/Version.kt build.gradle.kts
+          git add src/main/kotlin/org/muxi/sdk/Version.kt build.gradle.kts
           git commit -m "chore: release v${{ steps.version.outputs.version }}"
           git push origin HEAD:main
 
