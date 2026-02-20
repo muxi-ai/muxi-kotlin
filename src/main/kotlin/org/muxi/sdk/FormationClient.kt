@@ -105,7 +105,7 @@ class FormationClient(config: FormationConfig) {
     
     // Overlord / LLM
     suspend fun getOverlordConfig(): JsonElement? = transport.request("GET", "/overlord")
-    suspend fun getOverlordPersona(): JsonElement? = transport.request("GET", "/overlord/persona")
+    suspend fun getOverlordSoul(): JsonElement? = transport.request("GET", "/overlord/soul")
     suspend fun getLlmSettings(): JsonElement? = transport.request("GET", "/llm/settings")
     
     // Triggers / SOP / Audit
