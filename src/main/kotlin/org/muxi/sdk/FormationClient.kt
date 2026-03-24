@@ -84,6 +84,9 @@ class FormationClient(config: FormationConfig) {
     suspend fun getSchedulerJob(jobId: String): JsonElement? = transport.request("GET", "/scheduler/jobs/$jobId")
     suspend fun createSchedulerJob(type: String, schedule: String, message: String, userId: String): JsonElement? = transport.request("POST", "/scheduler/jobs", body = mapOf("type" to type, "schedule" to schedule, "message" to message, "user_id" to userId))
     suspend fun deleteSchedulerJob(jobId: String) { transport.request("DELETE", "/scheduler/jobs/$jobId") }
+    suspend fun updateSchedulerJob(jobId: String, updates: Map<String, Any>): JsonElement? = transport.request("PUT", "/scheduler/jobs/$jobId", body = updates)
+    suspend fun pauseSchedulerJob(jobId: String): JsonElement? = transport.request("POST", "/scheduler/jobs/$jobId/pause")
+    suspend fun resumeSchedulerJob(jobId: String): JsonElement? = transport.request("POST", "/scheduler/jobs/$jobId/resume")
     
     // Config endpoints
     suspend fun getAsyncConfig(): JsonElement? = transport.request("GET", "/async")
