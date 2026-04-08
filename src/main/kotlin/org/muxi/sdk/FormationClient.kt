@@ -202,14 +202,19 @@ internal class FormationTransport(
         
         val streamClient = client.newBuilder().readTimeout(0, java.util.concurrent.TimeUnit.SECONDS).build()
         streamClient.newCall(requestBuilder.build()).execute().use { response ->
-            var currentEvent: String? = null; val dataParts = mutableListOf<String>()
+            val parser = SseEventParser()
             response.body?.source()?.let { source ->
                 while (!source.exhausted()) {
                     val line = source.readUtf8Line() ?: break
-                    if (line.startsWith(":")) continue
-                    if (line.isEmpty()) { if (dataParts.isNotEmpty()) emit(SseEvent(currentEvent ?: "message", dataParts.joinToString("\n"))); currentEvent = null; dataParts.clear(); continue }
-                    when { line.startsWith("event:") -> currentEvent = line.removePrefix("event:").trim(); line.startsWith("data:") -> dataParts.add(line.removePrefix("data:").trim()) }
+                    parser.processLine(line)?.let {
+                        SseEventParser.throwIfRouteError(it)
+                        emit(it)
+                    }
                 }
+            }
+            parser.flush()?.let {
+                SseEventParser.throwIfRouteError(it)
+                emit(it)
             }
         }
     }
