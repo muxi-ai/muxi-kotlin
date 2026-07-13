@@ -23,6 +23,25 @@ data class FormationConfig(
     internal val app: String? = null  // Internal: for Console telemetry
 )
 
+/**
+ * Widgets from an `event: ui` stream frame; an empty array for other frames.
+ *
+ * The runtime delivers the response envelope's optional `ui` array (options,
+ * action_link, mcp_resource widgets) as a single `event: ui` SSE frame before
+ * `event: done`. Unknown widget types should be ignored (progressive enhancement).
+ */
+fun parseUiWidgets(event: SseEvent): kotlinx.serialization.json.JsonArray {
+    val empty = kotlinx.serialization.json.JsonArray(emptyList())
+    if (event.event != "ui") return empty
+    return try {
+        val parsed = kotlinx.serialization.json.Json.parseToJsonElement(event.data)
+        val ui = (parsed as? kotlinx.serialization.json.JsonObject)?.get("ui")
+        ui as? kotlinx.serialization.json.JsonArray ?: empty
+    } catch (e: kotlinx.serialization.SerializationException) {
+        empty
+    }
+}
+
 class FormationClient(config: FormationConfig) {
     private val transport: FormationTransport
     
@@ -236,12 +255,14 @@ internal class FormationTransport(
         return headers
     }
     
-    private fun unwrapEnvelope(obj: JsonElement): JsonElement? {
+    internal fun unwrapEnvelope(obj: JsonElement): JsonElement? {
         if (obj !is kotlinx.serialization.json.JsonObject || !obj.containsKey("data")) return obj
         val data = obj["data"]; if (data is kotlinx.serialization.json.JsonObject) {
             val result = data.toMutableMap(); val req = obj["request"]?.jsonObject
             val requestId = req?.get("id")?.jsonPrimitive?.contentOrNull ?: obj["request_id"]?.jsonPrimitive?.contentOrNull
+            val idempotencyKey = req?.get("idempotency_key")?.jsonPrimitive?.contentOrNull
             if (requestId != null && !result.containsKey("request_id")) result["request_id"] = kotlinx.serialization.json.JsonPrimitive(requestId)
+            if (idempotencyKey != null && !result.containsKey("idempotency_key")) result["idempotency_key"] = kotlinx.serialization.json.JsonPrimitive(idempotencyKey)
             obj["timestamp"]?.let { if (!result.containsKey("timestamp")) result["timestamp"] = it }
             return kotlinx.serialization.json.JsonObject(result)
         }

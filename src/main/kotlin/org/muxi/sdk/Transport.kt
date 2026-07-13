@@ -164,9 +164,11 @@ class Transport(
             val result = data.toMutableMap()
             val req = obj["request"]?.jsonObject
             val requestId = req?.get("id")?.jsonPrimitive?.contentOrNull ?: obj["request_id"]?.jsonPrimitive?.contentOrNull
+            val idempotencyKey = req?.get("idempotency_key")?.jsonPrimitive?.contentOrNull
             val ts = obj["timestamp"]
             
             if (requestId != null && !result.containsKey("request_id")) result["request_id"] = JsonPrimitive(requestId)
+            if (idempotencyKey != null && !result.containsKey("idempotency_key")) result["idempotency_key"] = JsonPrimitive(idempotencyKey)
             if (ts != null && !result.containsKey("timestamp")) result["timestamp"] = ts
             
             return JsonObject(result)
