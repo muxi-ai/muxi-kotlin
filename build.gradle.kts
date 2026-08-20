@@ -12,14 +12,14 @@ repositories {
 }
 
 dependencies {
-    implementation("com.squareup.okhttp3:okhttp:5.4.0")
-    implementation("com.squareup.okhttp3:okhttp-sse:5.4.0")
+    implementation("com.squareup.okhttp3:okhttp:5.5.0")
+    implementation("com.squareup.okhttp3:okhttp-sse:5.5.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     
     testImplementation(kotlin("test"))
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
-    testImplementation("com.squareup.okhttp3:mockwebserver:5.4.0")
+    testImplementation("com.squareup.okhttp3:mockwebserver:5.5.0")
     testImplementation("org.junit.jupiter:junit-jupiter:6.1.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
